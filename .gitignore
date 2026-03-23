@@ -1,0 +1,16 @@
+﻿# Visual Studio
+.vs/
+
+# Build outputs anywhere in the repo
+**/bin/
+**/obj/
+
+# Debug / Release folders anywhere
+**/[Dd]ebug/
+**/[Rr]elease/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
