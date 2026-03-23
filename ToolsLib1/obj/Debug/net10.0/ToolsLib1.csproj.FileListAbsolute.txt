@@ -1,0 +1,12 @@
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\bin\Debug\net10.0\ToolsLib1.deps.json
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\bin\Debug\net10.0\ToolsLib1.dll
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\bin\Debug\net10.0\ToolsLib1.pdb
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ToolsLib1.csproj.AssemblyReference.cache
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ToolsLib1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ToolsLib1.AssemblyInfoInputs.cache
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ToolsLib1.AssemblyInfo.cs
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ToolsLib1.csproj.CoreCompileInputs.cache
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ToolsLib1.dll
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\refint\ToolsLib1.dll
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ToolsLib1.pdb
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\ToolsLib1\obj\Debug\net10.0\ref\ToolsLib1.dll

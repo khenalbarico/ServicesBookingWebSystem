@@ -1,0 +1,15 @@
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\bin\Debug\net10.0\LogicLib1.deps.json
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\bin\Debug\net10.0\LogicLib1.dll
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\bin\Debug\net10.0\LogicLib1.pdb
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\bin\Debug\net10.0\ToolsLib1.dll
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\bin\Debug\net10.0\ToolsLib1.pdb
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.csproj.AssemblyReference.cache
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.AssemblyInfoInputs.cache
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.AssemblyInfo.cs
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.csproj.CoreCompileInputs.cache
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.csproj.Up2Date
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.dll
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\refint\LogicLib1.dll
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\LogicLib1.pdb
+C:\Users\Khen\source\repos\ServiceBookingSystem1\BlazorApp1\LogicLib1\obj\Debug\net10.0\ref\LogicLib1.dll
