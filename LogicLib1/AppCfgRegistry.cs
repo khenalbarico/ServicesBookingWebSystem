@@ -12,7 +12,9 @@ public static class AppCfgRegistry
              IConfiguration cfg)
     {
         var appCfg = new AppCfg1();
-        cfg.GetSection("FirebaseAuthentication").Bind(appCfg);
+        cfg.GetSection("FirebaseAuthentication")
+           .GetSection("MailkitSmtp")
+           .Bind(appCfg);
 
         svc.AddSingleton<IFirebaseCfg>(appCfg);
     }
