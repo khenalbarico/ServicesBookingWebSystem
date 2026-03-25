@@ -24,28 +24,14 @@
         <label for="login-password" class="input-label">Password</label>
         <div class="modern-input-shell">
             <input id="login-password"
-                   type="@(showPassword ? "text" : "password")"
-                   class="modern-input modern-input-password"
+                   type="password"
+                   class="modern-input"
                    @bind="model.Password"
                    @bind:event="oninput"
                    autocomplete="current-password"
                    placeholder="Enter your password" />
-            <button type="button"
-                    class="modern-input-action"
-                    @onclick="TogglePassword">
-                @(showPassword ? "Hide" : "Show")
-            </button>
         </div>
         <ValidationMessage For="@(() => model.Password)" class="field-validation" />
-    </div>
-
-    <div class="form-row">
-        <label class="checkbox">
-            <input type="checkbox" @bind="rememberMe" />
-            <span>Remember me</span>
-        </label>
-
-        <a href="/forgot-password" class="form-link">Forgot password?</a>
     </div>
 
     <button type="submit" class="btn-primary" disabled="@loading">
@@ -69,11 +55,7 @@
 @code {
     private LoginInput model = new();
     private bool loading;
-    private bool showPassword;
-    private bool rememberMe;
     private string? error;
-
-    private void TogglePassword() => showPassword = !showPassword;
 
     private async Task HandleLogin()
     {

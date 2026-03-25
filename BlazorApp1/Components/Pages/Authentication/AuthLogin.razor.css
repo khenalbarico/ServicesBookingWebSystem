@@ -82,45 +82,12 @@
         font-weight: 400;
     }
 
-.modern-input-password {
-    padding-right: 5.4rem;
-}
-
-.modern-input:-webkit-autofill,
-.modern-input:-webkit-autofill:hover,
-.modern-input:-webkit-autofill:focus {
-    -webkit-text-fill-color: #111827;
-    -webkit-box-shadow: 0 0 0 1000px transparent inset;
-    transition: background-color 9999s ease-out 0s;
-}
-
-.modern-input-action {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 36px;
-    padding: 0 0.85rem;
-    border: 1px solid rgba(99, 102, 241, 0.12);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.78);
-    color: #5b21b6;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-    .modern-input-action:hover {
-        background: #ffffff;
-        color: #4338ca;
-        border-color: rgba(124, 58, 237, 0.24);
-        box-shadow: 0 8px 18px rgba(99, 102, 241, 0.12);
-    }
-
-    .modern-input-action:focus-visible {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+    .modern-input:-webkit-autofill,
+    .modern-input:-webkit-autofill:hover,
+    .modern-input:-webkit-autofill:focus {
+        -webkit-text-fill-color: #111827;
+        -webkit-box-shadow: 0 0 0 1000px transparent inset;
+        transition: background-color 9999s ease-out 0s;
     }
 
 .form-row {

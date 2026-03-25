@@ -23,17 +23,12 @@
         <label for="register-password" class="input-label">Password</label>
         <div class="modern-input-shell">
             <input id="register-password"
-                   type="@(showPassword ? "text" : "password")"
-                   class="modern-input modern-input-password"
+                   type="password"
+                   class="modern-input"
                    @bind="model.Password"
                    @bind:event="oninput"
                    autocomplete="new-password"
                    placeholder="Create a secure password" />
-            <button type="button"
-                    class="modern-input-action"
-                    @onclick="TogglePassword">
-                @(showPassword ? "Hide" : "Show")
-            </button>
         </div>
         <ValidationMessage For="@(() => model.Password)" class="field-validation" />
         <div class="helper-text">Use at least 8 characters for a stronger password.</div>
@@ -43,7 +38,7 @@
         <label for="register-confirm-password" class="input-label">Confirm Password</label>
         <div class="modern-input-shell">
             <input id="register-confirm-password"
-                   type="@(showPassword ? "text" : "password")"
+                   type="password"
                    class="modern-input"
                    @bind="model.ConfirmPassword"
                    @bind:event="oninput"
@@ -81,11 +76,8 @@
 @code {
     private RegisterInput model = new();
     private bool loading;
-    private bool showPassword;
     private string? error;
     private string? success;
-
-    private void TogglePassword() => showPassword = !showPassword;
 
     private async Task HandleRegister()
     {
