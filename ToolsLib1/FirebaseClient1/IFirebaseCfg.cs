@@ -2,7 +2,7 @@
 
 public interface IFirebaseCfg
 {
-    string FirebaseApiKey      { get; set; }
-    string FirebaseAuthDomain  { get; set; }
-    string FirebaseDatabaseUrl { get; set; }
+    string ApiKey      { get; set; }
+    string AuthDomain  { get; set; }
+    string DatabaseUrl { get; set; }
 }

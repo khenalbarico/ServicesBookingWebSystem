@@ -1,0 +1,55 @@
+﻿@page "/auth"
+@layout AuthLayout
+
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-glow auth-glow-1"></div>
+        <div class="auth-glow auth-glow-2"></div>
+
+        <div class="auth-header">
+            <span class="auth-badge">Secure Access</span>
+            <h1>Welcome back</h1>
+            <p>Sign in to continue or create a new account in a few seconds.</p>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="Authentication tabs">
+            <button type="button"
+                    role="tab"
+                    aria-selected="@(activeTab == "login")"
+                    aria-controls="auth-panel"
+                    class="@GetTabClass("login")"
+                    @onclick='() => SetTab("login")'>
+                Login
+            </button>
+
+            <button type="button"
+                    role="tab"
+                    aria-selected="@(activeTab == "register")"
+                    aria-controls="auth-panel"
+                    class="@GetTabClass("register")"
+                    @onclick='() => SetTab("register")'>
+                Register
+            </button>
+        </div>
+
+        <div id="auth-panel" class="auth-body" role="tabpanel">
+            @if (activeTab == "login")
+            {
+                <AuthLogin />
+            }
+            else
+            {
+                <AuthRegister />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string activeTab = "login";
+
+    private void SetTab(string tab) => activeTab = tab;
+
+    private string GetTabClass(string tab)
+        => activeTab == tab ? "tab-button active" : "tab-button";
+}

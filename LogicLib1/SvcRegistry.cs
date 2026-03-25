@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using LogicLib1.AppAuth1;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToolsLib1.FirebaseClient1;
 using ToolsLib1.MailkitSmtp1;
@@ -15,15 +16,11 @@ public static class SvcRegistry
         svc.AddAppCfg(cfg);
 
         //App Logic Registry
-
+        svc.AddScoped<IAppAuthentication, AppAuthentication1>();
+        
         //Tool Registry
-        svc.AddScoped<FirebaseAuth1>();
-        svc.AddScoped<FirebaseRealtimeDb1>();
-        svc.AddScoped<MailkitSmtpClient1>();
-
-        svc.AddScoped<IToolAuthEmailProvider>(sp => sp.GetRequiredService<FirebaseAuth1>());
-        svc.AddScoped<IToolFirebaseDbOperations>(sp => sp.GetRequiredService<FirebaseRealtimeDb1>());
-        svc.AddScoped<IToolSmtpClient>(sp => sp.GetRequiredService<MailkitSmtpClient1>());
-
+        svc.AddScoped<IToolAuthEmailProvider, FirebaseAuth1>();
+        svc.AddScoped<IToolFirebaseDbOperations, FirebaseRealtimeDb1>();
+        svc.AddScoped<IToolSmtpClient, MailkitSmtpClient1>();
     }
 }

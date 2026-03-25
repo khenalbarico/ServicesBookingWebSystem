@@ -10,8 +10,8 @@ internal static class FirebaseClientFactory1
     {
         return new FirebaseAuthClient(new FirebaseAuthConfig
         {
-            ApiKey = cfg.FirebaseApiKey,
-            AuthDomain = cfg.FirebaseAuthDomain,
+            ApiKey = cfg.ApiKey,
+            AuthDomain = cfg.AuthDomain,
             Providers =
             [
                 new EmailProvider()
@@ -21,6 +21,6 @@ internal static class FirebaseClientFactory1
 
     public static FirebaseClient CreateDbClient(this IFirebaseCfg cfg)
     {
-        return new FirebaseClient(cfg.FirebaseDatabaseUrl);
+        return new FirebaseClient(cfg.DatabaseUrl);
     }
 }

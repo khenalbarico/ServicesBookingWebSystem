@@ -1,6 +1,21 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿@inject IToolAuthEmailProvider Auth
+@inject NavigationManager Nav
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        @{
+            var isAuthPage = routeData.PageType == typeof(Pages.Authentication.AuthPage);
+            var isLoggedIn = !string.IsNullOrWhiteSpace(Auth.GetCurrentUser());
+        }
+
+        @if (!isLoggedIn && !isAuthPage)
+        {
+            Nav.NavigateTo("/auth", true);
+        }
+        else
+        {
+            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        }
     </Found>
 </Router>

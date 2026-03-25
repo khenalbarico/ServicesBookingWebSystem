@@ -9,12 +9,7 @@ public class FirebaseAuth1(IFirebaseCfg _cfg, HttpClient _httpClient) : IToolAut
     readonly FirebaseAuthClient _authClient = _cfg.CreateAuthClient();
 
     public string GetCurrentUser()
-    {
-        if (_authClient.User == null)
-            throw new InvalidOperationException("No user is currently signed in.");
-
-        return _authClient.User.Uid;
-    }
+    => _authClient.User?.Uid ?? string.Empty;
 
     public async Task<UserCredential> SignInAsync(
         string email,
@@ -31,7 +26,7 @@ public class FirebaseAuth1(IFirebaseCfg _cfg, HttpClient _httpClient) : IToolAut
         return res;
     }
 
-    public async Task<UserCredential> SignUpAsync(
+    public async Task SignUpAsync(
         string email,
         string password)
     {
@@ -42,8 +37,6 @@ public class FirebaseAuth1(IFirebaseCfg _cfg, HttpClient _httpClient) : IToolAut
         await SendEmailVerificationAsync(token);
 
         SignOut();
-
-        return res;
     }
 
     public async Task<bool> HasValidSessionAsync()
@@ -66,7 +59,7 @@ public class FirebaseAuth1(IFirebaseCfg _cfg, HttpClient _httpClient) : IToolAut
 
     async Task SendEmailVerificationAsync(string idToken)
     {
-        var url = $"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={_cfg.FirebaseApiKey}";
+        var url = $"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={_cfg.ApiKey}";
 
         var requestBody = new
         {

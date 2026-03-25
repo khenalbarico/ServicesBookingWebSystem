@@ -8,7 +8,7 @@ public interface IAppAuthentication
     Task<UserCredential> SignInAsync(
         string email,
         string pass);
-    Task<UserCredential> SignUpAsync(
+    Task SignUpAsync(
         string email,
         string pass);
     void SignOut();

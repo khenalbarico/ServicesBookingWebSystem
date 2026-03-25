@@ -1,0 +1,27 @@
+﻿@inject IAppAuthentication AuthService
+@inject NavigationManager  Nav
+
+<button class="@CssClass" @onclick="HandleSignOut" disabled="@isLoading">
+    <span>@(isLoading ? "Signing out..." : "Sign Out")</span>
+</button>
+
+@code {
+    [Parameter] public string CssClass { get; set; } = "logout-btn";
+
+    private bool isLoading;
+
+    private async Task HandleSignOut()
+    {
+        isLoading = true;
+
+        try
+        {
+            AuthService.SignOut();
+            Nav.NavigateTo("/auth", true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
