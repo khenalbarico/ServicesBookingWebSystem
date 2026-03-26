@@ -4,45 +4,6 @@
 
 <EditForm Model="model" OnValidSubmit="HandleLogin" class="auth-form">
     <DataAnnotationsValidator />
-    <ValidationSummary class="validation-summary" />
-
-    <div class="form-group">
-        <label for="login-email" class="input-label">Email</label>
-        <div class="modern-input-shell">
-            <input id="login-email"
-                   type="email"
-                   class="modern-input"
-                   @bind="model.Email"
-                   @bind:event="oninput"
-                   autocomplete="email"
-                   placeholder="you@example.com" />
-        </div>
-        <ValidationMessage For="@(() => model.Email)" class="field-validation" />
-    </div>
-
-    <div class="form-group">
-        <label for="login-password" class="input-label">Password</label>
-        <div class="modern-input-shell">
-            <input id="login-password"
-                   type="password"
-                   class="modern-input"
-                   @bind="model.Password"
-                   @bind:event="oninput"
-                   autocomplete="current-password"
-                   placeholder="Enter your password" />
-        </div>
-        <ValidationMessage For="@(() => model.Password)" class="field-validation" />
-    </div>
-
-    <button type="submit" class="btn-primary" disabled="@loading">
-        <span class="btn-content">
-            @if (loading)
-            {
-                <span class="spinner"></span>
-            }
-            <span>@(loading ? "Signing in..." : "Sign In")</span>
-        </span>
-    </button>
 
     @if (!string.IsNullOrWhiteSpace(error))
     {
@@ -50,6 +11,54 @@
             @error
         </div>
     }
+
+    <div class="form-section">
+        <div class="form-group">
+            <label for="login-email" class="input-label">Email</label>
+            <div class="modern-input-shell">
+                <input id="login-email"
+                       type="email"
+                       class="modern-input"
+                       @bind="model.Email"
+                       @bind:event="oninput"
+                       autocomplete="email"
+                       placeholder="you@example.com" />
+            </div>
+            <ValidationMessage For="@(() => model.Email)" class="field-validation" />
+        </div>
+
+        <div class="form-group">
+            <div class="label-row">
+                <label for="login-password" class="input-label">Password</label>
+                <a href="/forgot-password" class="form-link">Forgot password?</a>
+            </div>
+
+            <div class="modern-input-shell">
+                <input id="login-password"
+                       type="password"
+                       class="modern-input modern-input-password"
+                       @bind="model.Password"
+                       @bind:event="oninput"
+                       autocomplete="current-password"
+                       placeholder="Enter your password" />
+            </div>
+            <ValidationMessage For="@(() => model.Password)" class="field-validation" />
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-primary" disabled="@loading">
+            <span class="btn-content">
+                @if (loading)
+                {
+                    <span class="spinner"></span>
+                }
+                <span>@(loading ? "Signing in..." : "Sign In")</span>
+            </span>
+        </button>
+    </div>
+
+    <ValidationSummary class="validation-summary" />
 </EditForm>
 
 @code {

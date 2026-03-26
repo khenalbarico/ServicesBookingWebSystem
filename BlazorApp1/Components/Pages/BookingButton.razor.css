@@ -1,0 +1,62 @@
+﻿.booking-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem 1.4rem;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #512bd4 0%, #7b5cff 45%, #38bdf8 100%);
+    box-shadow: 0 10px 24px rgba(81, 43, 212, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+    .booking-btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, rgba(255,255,255,0.22), rgba(255,255,255,0));
+        transform: translateX(-100%);
+        transition: transform 0.45s ease;
+    }
+
+    .booking-btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.05);
+        box-shadow: 0 14px 30px rgba(81, 43, 212, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    }
+
+        .booking-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+    .booking-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 8px 18px rgba(81, 43, 212, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .booking-btn:focus-visible {
+        outline: 3px solid rgba(56, 189, 248, 0.45);
+        outline-offset: 3px;
+    }
+
+.booking-btn__text,
+.booking-btn__icon {
+    position: relative;
+    z-index: 1;
+}
+
+.booking-btn__icon {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.booking-btn:hover .booking-btn__icon {
+    transform: translateX(3px);
+}

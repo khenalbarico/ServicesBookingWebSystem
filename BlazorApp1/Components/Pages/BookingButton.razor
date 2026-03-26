@@ -1,0 +1,15 @@
+﻿<button class="booking-btn" @onclick="HandleBookingClick">
+    <span class="booking-btn__text">Book Now</span>
+    <span class="booking-btn__icon">→</span>
+</button>
+
+@code {
+    [Parameter] public string NavigateUrl { get; set; } = "/booking";
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private void HandleBookingClick()
+    {
+        Navigation.NavigateTo(NavigateUrl);
+    }
+}
