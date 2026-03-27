@@ -1,15 +1,21 @@
 ﻿<button class="booking-btn" @onclick="HandleBookingClick">
-    <span class="booking-btn__text">Book Now</span>
+    <span class="booking-btn__text">Book an Appointment</span>
     <span class="booking-btn__icon">→</span>
 </button>
 
-@code {
-    [Parameter] public string NavigateUrl { get; set; } = "/booking";
+<BookingModal @bind-IsOpen="showBookingModal" OnBook="OnBooked" />
 
-    [Inject] private NavigationManager Navigation { get; set; } = default!;
+@code {
+    private bool showBookingModal;
 
     private void HandleBookingClick()
     {
-        Navigation.NavigateTo(NavigateUrl);
+        showBookingModal = true;
+    }
+
+    private Task OnBooked()
+    {
+        Console.WriteLine("Booking submitted.");
+        return Task.CompletedTask;
     }
 }

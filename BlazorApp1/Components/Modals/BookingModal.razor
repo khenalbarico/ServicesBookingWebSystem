@@ -1,5 +1,210 @@
-﻿<h3>BookingModal</h3>
+﻿@using System.ComponentModel.DataAnnotations
+
+@if (IsOpen)
+{
+    <div class="booking-modal-overlay" @onclick="Close">
+        <div class="booking-modal" @onclick:stopPropagation="true" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
+            <button class="booking-modal__close" @onclick="Close" aria-label="Close booking modal">✕</button>
+
+            <div class="booking-modal__hero">
+                <div class="booking-modal__hero-content">
+                    <div class="booking-modal__pill">Premium Self-Care Booking</div>
+                    <h2 id="booking-modal-title">Reserve Your Appointment</h2>
+                    <p>
+                        Choose your service, share your details, and request your preferred appointment schedule.
+                    </p>
+                </div>
+            </div>
+
+            <div class="booking-modal__content">
+                <EditForm Model="@bookingModel" OnValidSubmit="HandleBook" class="booking-form">
+                    <DataAnnotationsValidator />
+
+                    <div class="booking-section">
+                        <div class="booking-section__header">
+                            <h3>Select a Service</h3>
+                            <p>Choose the experience you would like to book.</p>
+                        </div>
+
+                        <div class="booking-modal__service-cards">
+                            <button type="button"
+                                    class="@GetServiceCardClass("Nail Care")"
+                                    @onclick='() => SelectService("Nail Care")'>
+                                <div class="service-card__icon">💅</div>
+                                <div>
+                                    <div class="service-card__title">Nail Care</div>
+                                    <div class="service-card__text">Classic manicure, polish, and pampering</div>
+                                </div>
+                            </button>
+
+                            <button type="button"
+                                    class="@GetServiceCardClass("Massage")"
+                                    @onclick='() => SelectService("Massage")'>
+                                <div class="service-card__icon">💆</div>
+                                <div>
+                                    <div class="service-card__title">Massage</div>
+                                    <div class="service-card__text">Relaxing body treatment and stress relief</div>
+                                </div>
+                            </button>
+
+                            <button type="button"
+                                    class="@GetServiceCardClass("Spa Care")"
+                                    @onclick='() => SelectService("Spa Care")'>
+                                <div class="service-card__icon">🌸</div>
+                                <div>
+                                    <div class="service-card__title">Spa Care</div>
+                                    <div class="service-card__text">Wellness, glow, and rejuvenation</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="booking-section">
+                        <div class="booking-section__header">
+                            <h3>Your Details</h3>
+                            <p>We’ll use these details to confirm your requested schedule.</p>
+                        </div>
+
+                        <div class="booking-form__grid">
+                            <div class="booking-form__group booking-form__group--full">
+                                <label for="service">Selected Service</label>
+                                <InputText id="service"
+                                           @bind-Value="bookingModel.Service"
+                                           class="booking-input"
+                                           readonly />
+                                <ValidationMessage For="@(() => bookingModel.Service)" class="field-validation" />
+                            </div>
+
+                            <div class="booking-form__group booking-form__group--full">
+                                <label for="fullName">Full Name</label>
+                                <InputText id="fullName"
+                                           @bind-Value="bookingModel.FullName"
+                                           class="booking-input"
+                                           placeholder="Enter your full name" />
+                                <ValidationMessage For="@(() => bookingModel.FullName)" class="field-validation" />
+                            </div>
+
+                            <div class="booking-form__group booking-form__group--full">
+                                <label for="email">Email Address</label>
+                                <InputText id="email"
+                                           @bind-Value="bookingModel.Email"
+                                           class="booking-input"
+                                           placeholder="Enter your email address" />
+                                <ValidationMessage For="@(() => bookingModel.Email)" class="field-validation" />
+                            </div>
+
+                            <div class="booking-form__group booking-form__group--half">
+                                <label for="preferredDate">Preferred Date</label>
+                                <InputDate id="preferredDate"
+                                           @bind-Value="bookingModel.PreferredDate"
+                                           class="booking-input" />
+                                <ValidationMessage For="@(() => bookingModel.PreferredDate)" class="field-validation" />
+                            </div>
+
+                            <div class="booking-form__group booking-form__group--half">
+                                <label for="preferredTime">Preferred Time</label>
+                                <InputText id="preferredTime"
+                                           @bind-Value="bookingModel.PreferredTime"
+                                           class="booking-input"
+                                           placeholder="e.g. 2:00 PM" />
+                                <ValidationMessage For="@(() => bookingModel.PreferredTime)" class="field-validation" />
+                            </div>
+
+                            <div class="booking-form__group booking-form__group--full">
+                                <label for="notes">Additional Notes</label>
+                                <InputTextArea id="notes"
+                                               @bind-Value="bookingModel.Notes"
+                                               class="booking-input booking-input--textarea"
+                                               placeholder="Optional notes, preferences, or special requests" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-form__footer">
+                        <div class="booking-form__note">
+                            ✨ Your booking request will be reviewed and confirmed shortly.
+                        </div>
+
+                        <button type="submit" class="booking-submit-btn" disabled="@isSubmitting">
+                            <span class="booking-submit-btn__content">
+                                @if (isSubmitting)
+                                {
+                                    <span class="booking-submit-spinner"></span>
+                                }
+                                <span>@(isSubmitting ? "Submitting..." : "Confirm Booking")</span>
+                                @if (!isSubmitting)
+                                {
+                                    <span class="booking-submit-btn__icon">→</span>
+                                }
+                            </span>
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public EventCallback OnBook { get; set; }
 
+    private bool isSubmitting;
+
+    private BookingFormModel bookingModel = new()
+    {
+        Service = "Nail Care",
+        PreferredDate = DateTime.Today
+    };
+
+    private async Task Close()
+    {
+        IsOpen = false;
+        await IsOpenChanged.InvokeAsync(IsOpen);
+    }
+
+    private void SelectService(string service)
+    {
+        bookingModel.Service = service;
+    }
+
+    private string GetServiceCardClass(string service)
+        => bookingModel.Service == service ? "service-card service-card--active" : "service-card";
+
+    private async Task HandleBook()
+    {
+        isSubmitting = true;
+
+        try
+        {
+            await OnBook.InvokeAsync();
+            await Close();
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public class BookingFormModel
+    {
+        [Required(ErrorMessage = "Please select a service.")]
+        public string Service { get; set; } = "Nail Care";
+
+        [Required(ErrorMessage = "Full name is required.")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email address is required.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Preferred date is required.")]
+        public DateTime? PreferredDate { get; set; }
+
+        [Required(ErrorMessage = "Preferred time is required.")]
+        public string PreferredTime { get; set; } = string.Empty;
+
+        public string Notes { get; set; } = string.Empty;
+    }
 }

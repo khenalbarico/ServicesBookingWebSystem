@@ -17,25 +17,25 @@ public class AppAuthentication1(IToolAuthEmailProvider _authClient) : IAppAuthen
         }
         catch (FirebaseAuthException ex)
         {
-            throw ex.CreateFirebaseAuthExceptiin(isSignUp: false);
+            throw ex.CreateFirebaseAuthException(isSignUp: false);
         }
         catch (HttpRequestException ex)
         {
-            throw new AppAuthException(
+            throw new AppCustomException(
                 "network-request-failed",
                 "Network error. Please check your internet connection and try again.",
                 ex);
         }
         catch (TaskCanceledException ex)
         {
-            throw new AppAuthException(
+            throw new AppCustomException(
                 "request-timeout",
                 "The request timed out. Please try again.",
                 ex);
         }
         catch (Exception ex)
         {
-            throw new AppAuthException(
+            throw new AppCustomException(
                 "unknown-error",
                 "Something went wrong while signing in.",
                 ex);
@@ -53,25 +53,25 @@ public class AppAuthentication1(IToolAuthEmailProvider _authClient) : IAppAuthen
         }
         catch (FirebaseAuthException ex)
         {
-            throw ex.CreateFirebaseAuthExceptiin(isSignUp: true);
+            throw ex.CreateFirebaseAuthException(isSignUp: true);
         }
         catch (HttpRequestException ex)
         {
-            throw new AppAuthException(
+            throw new AppCustomException(
                 "network-request-failed",
                 "Network error. Please check your internet connection and try again.",
                 ex);
         }
         catch (TaskCanceledException ex)
         {
-            throw new AppAuthException(
+            throw new AppCustomException(
                 "request-timeout",
                 "The request timed out. Please try again.",
                 ex);
         }
         catch (Exception ex)
         {
-            throw new AppAuthException(
+            throw new AppCustomException(
                 "unknown-error",
                 "Something went wrong while signing up.",
                 ex);

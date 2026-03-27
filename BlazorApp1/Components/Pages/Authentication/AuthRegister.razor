@@ -20,7 +20,7 @@
 
     <div class="form-section">
         <div class="form-group">
-            <label for="register-email" class="input-label">Email</label>
+            <label for="register-email" class="input-label">Email Address</label>
             <div class="modern-input-shell">
                 <input id="register-email"
                        type="email"
@@ -61,6 +61,16 @@
             </div>
             <ValidationMessage For="@(() => model.ConfirmPassword)" class="field-validation" />
         </div>
+    </div>
+
+    <div class="register-meta">
+        <p class="terms-text">
+            By creating an account, you agree to our
+            <a href="/terms" class="form-link">Terms</a>
+            and
+            <a href="/privacy" class="form-link">Privacy Policy</a>.
+        </p>
+        <span class="secure-note">Fast and secure account setup</span>
     </div>
 
     <div class="form-actions">

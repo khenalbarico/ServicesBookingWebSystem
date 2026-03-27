@@ -1,19 +1,28 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
+<div class="app-shell">
+    <aside class="app-sidebar">
         <NavMenu />
+    </aside>
+
+    <div class="app-main-shell">
+        <header class="app-topbar">
+            <div class="app-topbar__left">
+                <div class="app-topbar__eyebrow">Wellness Booking Platform</div>
+                <h1 class="app-topbar__title">Welcome Back</h1>
+            </div>
+
+            <div class="app-topbar__right">
+                <BookingButton />
+            </div>
+        </header>
+
+        <main class="app-main-content">
+            <article class="app-content-card">
+                @Body
+            </article>
+        </main>
     </div>
-
-    <main>
-        <div class="top-row px-4">
-            <BookingButton NavigateUrl="/booking" />
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>

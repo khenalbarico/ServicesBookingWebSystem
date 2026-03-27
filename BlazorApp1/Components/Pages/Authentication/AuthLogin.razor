@@ -14,7 +14,7 @@
 
     <div class="form-section">
         <div class="form-group">
-            <label for="login-email" class="input-label">Email</label>
+            <label for="login-email" class="input-label">Email Address</label>
             <div class="modern-input-shell">
                 <input id="login-email"
                        type="email"
@@ -44,6 +44,15 @@
             </div>
             <ValidationMessage For="@(() => model.Password)" class="field-validation" />
         </div>
+    </div>
+
+    <div class="auth-helper-row">
+        <label class="remember-me">
+            <input type="checkbox" />
+            <span>Keep me signed in</span>
+        </label>
+
+        <span class="secure-note">Secure sign in</span>
     </div>
 
     <div class="form-actions">
