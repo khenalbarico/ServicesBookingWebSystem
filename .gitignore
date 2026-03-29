@@ -14,3 +14,4 @@
 *.suo
 *.userosscache
 *.sln.docstates
+/BlazorApp1/appsettings.json
