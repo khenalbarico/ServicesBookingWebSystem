@@ -1,0 +1,83 @@
+﻿@page "/"
+@using BlazorApp1.Mappers
+@using BlazorApp1.ViewModels
+@using LogicLib1.AppDb1
+@using LogicLib1.AppModels1.Server
+@inject IAppDbOperator AppDbOperator
+
+<PageTitle>Beauty Services</PageTitle>
+
+<HeroSection />
+
+<section id="services" class="services-section py-5">
+    <div class="container py-4">
+        <SectionHeading Badge="Our Services"
+                        Title="Choose a service and book instantly"
+                        Description="Browse available beauty services loaded from Firebase. Select the service you want and continue to booking." />
+
+        @if (IsLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-secondary" role="status"></div>
+                <p class="text-muted mt-3 mb-0">Loading services...</p>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="alert alert-danger border-0 rounded-4 shadow-sm">
+                <h5 class="fw-bold mb-2">Unable to load services</h5>
+                <p class="mb-0">@ErrorMessage</p>
+            </div>
+        }
+        else
+        {
+            @if (NailCards.Count > 0)
+            {
+                <ServiceCategorySection CategoryName="Nail Services"
+                                        Description="Manicure, nail extensions, polish, and nail beauty treatments."
+                                        Services="NailCards" />
+            }
+
+            @if (LashCards.Count > 0)
+            {
+                <ServiceCategorySection CategoryName="Lash Services"
+                                        Description="Lash enhancement and eyelash extension services."
+                                        Services="LashCards" />
+            }
+        }
+    </div>
+</section>
+
+@code {
+    private bool IsLoading = true;
+    private string? ErrorMessage;
+
+    private ServiceCollectionResponse Response = new();
+    private List<LandingServiceCardVm> AllCards = [];
+
+    private IReadOnlyList<LandingServiceCardVm> NailCards =>
+        AllCards.Where(x => x.Category == "Nails").ToList();
+
+    private IReadOnlyList<LandingServiceCardVm> LashCards =>
+        AllCards.Where(x => x.Category == "Lashes").ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = null;
+
+            Response = await AppDbOperator.GetServicesAsync();
+            AllCards = ServiceLandingMapper.ToLandingCards(Response);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

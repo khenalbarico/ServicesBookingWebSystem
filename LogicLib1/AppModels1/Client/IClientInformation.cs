@@ -1,9 +1,9 @@
-﻿namespace LogicLib1.AppInit1.AppCaching1;
+﻿namespace LogicLib1.AppModels1.Client;
 
-public interface IUserInfoCache
+public interface IClientInformation
 {
-    string Email         { get; set; }
     string FirstName     { get; set; }
     string LastName      { get; set; }
+    string Email         { get; set; }
     string ContactNumber { get; set; }
 }

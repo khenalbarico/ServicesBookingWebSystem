@@ -1,32 +1,9 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="app-shell">
-    <aside class="app-sidebar">
-        <NavMenu />
-    </aside>
-
-    <div class="app-main-shell">
-        <header class="app-topbar">
-            <div class="app-topbar__left">
-                <div class="app-topbar__eyebrow">Wellness Booking Platform</div>
-                <h1 class="app-topbar__title">Welcome Back</h1>
-            </div>
-
-            <div class="app-topbar__right">
-                <BookingButton />
-            </div>
-        </header>
-
-        <main class="app-main-content">
-            <article class="app-content-card">
-                @Body
-            </article>
-        </main>
-    </div>
-</div>
-
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+<div class="page-shell">
+    <SiteHeader />
+    <main class="main-content">
+        @Body
+    </main>
+    <SiteFooter />
 </div>

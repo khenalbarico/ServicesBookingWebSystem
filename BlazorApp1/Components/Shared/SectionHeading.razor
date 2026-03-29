@@ -1,0 +1,14 @@
+﻿<div class="section-heading text-center mb-5">
+    <span class="section-badge">@Badge</span>
+    <h2 class="section-title mt-2">@Title</h2>
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p class="section-description mx-auto">@Description</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string Badge       { get; set; } = "";
+    [Parameter] public string Title       { get; set; } = "";
+    [Parameter] public string Description { get; set; } = "";
+}

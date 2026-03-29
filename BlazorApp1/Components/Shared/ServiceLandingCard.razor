@@ -1,0 +1,49 @@
+﻿@using BlazorApp1.ViewModels
+
+<div class="service-card h-100">
+    <div class="service-card-image-wrapper">
+        <img src="@Card.ImageUrl" alt="@Card.Title" class="service-card-image" />
+    </div>
+
+    <div class="service-card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="service-category-badge">@Card.Category</span>
+
+            @if (Card.HasAvailableSchedule)
+            {
+                <span class="availability-badge available">Available</span>
+            }
+            else
+            {
+                <span class="availability-badge unavailable">Unavailable</span>
+            }
+        </div>
+
+        <h3 class="service-title">@Card.Title</h3>
+
+        <div class="text-muted small mb-2">Code: @Card.Uid</div>
+
+        <p class="service-description">@Card.Description</p>
+
+        <div class="service-meta mb-3">
+            <div><strong>Price:</strong> ₱@Card.Cost</div>
+
+            @if (Card.AvailableDays.Count > 0)
+            {
+                <div>
+                    <strong>Days:</strong>
+                    @string.Join(", ", Card.AvailableDays)
+                </div>
+            }
+        </div>
+
+        <a class="btn btn-brand w-100 rounded-pill"
+           href="@($"/book/{Card.Category.ToLowerInvariant()}/{Card.Uid}")">
+            Book This Service
+        </a>
+    </div>
+</div>
+
+@code {
+    [Parameter] public LandingServiceCardVm Card { get; set; } = default!;
+}

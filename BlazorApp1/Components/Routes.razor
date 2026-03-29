@@ -1,21 +1,15 @@
-﻿@inject IToolAuthEmailProvider Auth
-@inject NavigationManager Nav
-
-<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        @{
-            var isAuthPage = routeData.PageType == typeof(Pages.Authentication.AuthPage);
-            var isLoggedIn = !string.IsNullOrWhiteSpace(Auth.GetCurrentUser());
-        }
-
-        @if (!isLoggedIn && !isAuthPage)
-        {
-            Nav.NavigateTo("/auth", true);
-        }
-        else
-        {
-            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-            <FocusOnNavigate RouteData="routeData" Selector="h1" />
-        }
+        <RouteView RouteData="routeData" DefaultLayout="typeof(BlazorApp1.Components.Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(BlazorApp1.Components.Layout.MainLayout)">
+            <div class="container py-5 text-center">
+                <h1 class="display-6 fw-bold">Page not found</h1>
+                <p class="text-muted">The page you requested does not exist.</p>
+                <a href="/" class="btn btn-brand rounded-pill px-4">Back to home</a>
+            </div>
+        </LayoutView>
+    </NotFound>
 </Router>

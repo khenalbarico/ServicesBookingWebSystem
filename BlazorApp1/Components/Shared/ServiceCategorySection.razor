@@ -1,0 +1,25 @@
+﻿@using BlazorApp1.ViewModels
+
+<section class="service-category-section mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">@CategoryName</h2>
+            <p class="text-muted mb-0">@Description</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var item in Services)
+        {
+            <div class="col-12 col-md-6 col-xl-4">
+                <ServiceLandingCard Card="item" />
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public string                              CategoryName { get; set; } = "";
+    [Parameter] public string                              Description  { get; set; } = "";
+    [Parameter] public IReadOnlyList<LandingServiceCardVm> Services     { get; set; } = [];
+}

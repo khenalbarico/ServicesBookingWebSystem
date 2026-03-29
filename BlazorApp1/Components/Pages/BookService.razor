@@ -1,0 +1,100 @@
+﻿@page "/book/{Category}/{Uid}"
+@using LogicLib1.AppDb1
+@using LogicLib1.AppModels1.Server
+@using LogicLib1.AppModels1.Server.Services
+@inject IAppDbOperator AppDbOperator
+
+<PageTitle>Book Service</PageTitle>
+
+@if (IsLoading)
+{
+    <div class="container py-5 text-center">
+        <div class="spinner-border text-secondary"></div>
+        <p class="text-muted mt-3">Loading service details...</p>
+    </div>
+}
+else if (SelectedService is null)
+{
+    <div class="container py-5">
+        <div class="alert alert-warning rounded-4 border-0 shadow-sm">
+            <h4 class="fw-bold">Service not found</h4>
+            <p class="mb-0">The selected service does not exist.</p>
+        </div>
+    </div>
+}
+else
+{
+    <section class="py-5">
+        <div class="container py-4">
+            <div class="booking-shell">
+                <span class="section-badge">@Category</span>
+                <h1 class="fw-bold mt-3">@SelectedService.Details</h1>
+
+                <div class="text-muted mb-3">Service Code: @SelectedService.Uid</div>
+
+                <div class="booking-meta">
+                    <div class="booking-meta-item">
+                        <strong>Price:</strong> ₱@SelectedService.Cost
+                    </div>
+                    <div class="booking-meta-item">
+                        <strong>Status:</strong>
+                        @(SelectedService.ScheduleSlots?.IsAvailable == true ? "Available" : "Unavailable")
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5 class="fw-bold mb-3">Available Slot</h5>
+
+                    <div class="mb-3 p-3 rounded-4 border bg-white">
+                        <div>
+                            <strong>Status:</strong>
+                            @(SelectedService.ScheduleSlots?.IsAvailable == true ? "Available" : "Unavailable")
+                        </div>
+                        <div>
+                            <strong>Days:</strong>
+                            @(SelectedService.ScheduleSlots?.DaySlots is { Count: > 0 }
+                                                    ? string.Join(", ", SelectedService.ScheduleSlots.DaySlots)
+                                                    : "No days available")
+                        </div>
+                        <div>
+                            <strong>Time Slots:</strong>
+                            @(SelectedService.ScheduleSlots?.TimeSlots is { Count: > 0 }
+                                                    ? string.Join(", ", SelectedService.ScheduleSlots.TimeSlots)
+                                                    : "No time slots available")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public string Category { get; set; } = "";
+    [Parameter] public string Uid { get; set; } = "";
+
+    private bool IsLoading = true;
+    private BaseSvcStructure? SelectedService;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            SelectedService = null;
+
+            var response = await AppDbOperator.GetServicesAsync();
+
+            SelectedService = Category.ToLowerInvariant() switch
+            {
+                "nails" => response.Nails.FirstOrDefault(x => x.Uid.Equals(Uid, StringComparison.OrdinalIgnoreCase)),
+                "lashes" => response.Lashes.FirstOrDefault(x => x.Uid.Equals(Uid, StringComparison.OrdinalIgnoreCase)),
+                _ => null
+            };
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}
