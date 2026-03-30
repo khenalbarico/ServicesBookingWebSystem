@@ -3,13 +3,14 @@ using System.Text.Json;
 
 namespace ToolsLib1.Paymongo1;
 
-public sealed class Paymongo2 (IPaymongoCfg _cfg) : IToolPaymongo
+public sealed class Paymongo2(IPaymongoCfg _cfg) : IToolPaymongo
 {
-    readonly HttpClient httpClient = _cfg.CreatePaymongoClient();
+    private readonly HttpClient httpClient = _cfg.CreatePaymongoClient();
+
     public async Task<PaymongoCheckoutRes> CreateCheckoutAsync(
                  PaymongoCheckoutReq req,
                  CancellationToken   ct = default)
-    {
+            {
         var bookingRef = $"BK-{DateTime.UtcNow:yyyyMMddHHmmssfff}";
 
         var payload = new
@@ -27,24 +28,19 @@ public sealed class Paymongo2 (IPaymongoCfg _cfg) : IToolPaymongo
                     send_email_receipt = true,
                     show_description = true,
                     show_line_items = true,
-                    description = $"Booking for {req.ServiceName}",
+                    description = req.Description,
                     statement_descriptor = "PETERBOOKING",
-                    line_items = new[]
+                    line_items = req.LineItems.Select(x => new
                     {
-                        new
-                        {
-                            currency = "PHP",
-                            amount = req.AmountInCentavos,
-                            description = req.ServiceName,
-                            name = req.ServiceName,
-                            quantity = 1
-                        }
-                    },
+                        currency = "PHP",
+                        amount = x.AmountInCentavos,
+                        description = x.Description,
+                        name = x.Name,
+                        quantity = x.Quantity
+                    }).ToArray(),
                     payment_method_types = new[]
                     {
-                        "gcash",
-                        "paymaya",
-                        "card"
+                        "qrph"
                     },
                     reference_number = bookingRef,
                     success_url = req.SuccessUrl,
@@ -52,20 +48,21 @@ public sealed class Paymongo2 (IPaymongoCfg _cfg) : IToolPaymongo
                     metadata = new
                     {
                         booking_reference = bookingRef,
-                        service_id = req.ServiceId,
-                        service_name = req.ServiceName,
                         customer_name = req.CustomerName,
                         customer_email = req.CustomerEmail,
                         appointment_date = req.AppointmentDate,
-                        appointment_time = req.AppointmentTime
+                        appointment_time = req.AppointmentTime,
+                        description = req.Description,
+                        item_count = req.LineItems.Count,
+                        total_amount_in_centavos = req.LineItems.Sum(x => x.AmountInCentavos * x.Quantity)
                     }
                 }
             }
         };
 
-              var json    = JsonSerializer.Serialize(payload);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var json = JsonSerializer.Serialize(payload);
 
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var res     = await httpClient.PostAsync("checkout_sessions", content, ct);
               var resBody = await res.Content.ReadAsStringAsync(ct);
 
@@ -73,9 +70,9 @@ public sealed class Paymongo2 (IPaymongoCfg _cfg) : IToolPaymongo
         {
             return new PaymongoCheckoutRes
             {
-                IsSuccess        = false,
+                IsSuccess = false,
                 BookingReference = bookingRef,
-                ErrorMessage     = $"PayMongo error: {(int)res.StatusCode} - {resBody}"
+                ErrorMessage = $"PayMongo error: {(int)res.StatusCode} - {resBody}"
             };
         }
 
@@ -90,19 +87,19 @@ public sealed class Paymongo2 (IPaymongoCfg _cfg) : IToolPaymongo
 
             return new PaymongoCheckoutRes
             {
-                IsSuccess         = true,
-                BookingReference  = bookingRef,
+                IsSuccess = true,
+                BookingReference = bookingRef,
                 CheckoutSessionId = id,
-                CheckoutUrl       = checkoutUrl
+                CheckoutUrl = checkoutUrl
             };
         }
         catch (Exception ex)
         {
             return new PaymongoCheckoutRes
             {
-                IsSuccess        = false,
+                IsSuccess = false,
                 BookingReference = bookingRef,
-                ErrorMessage     = $"Failed to parse PayMongo response. {ex.Message}"
+                ErrorMessage = $"Failed to parse PayMongo response. {ex.Message}. Raw response: {resBody}"
             };
         }
     }

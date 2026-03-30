@@ -7,5 +7,5 @@ public interface IMailkitSmtpCfg
     string AppPassword    { get; set; }
     string UserName       { get; set; }
     string SmtpHost       { get; set; }
-    int SmtpPort          { get; set; }
+    int    SmtpPort       { get; set; }
 }

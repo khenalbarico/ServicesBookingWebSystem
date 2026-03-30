@@ -1,6 +1,6 @@
 ﻿using LogicLib1.AppAuth1;
 using LogicLib1.AppDb1;
-using LogicLib1.AppModels1.Client;
+using LogicLib1.AppEmailer1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToolsLib1.FirebaseClient1;
@@ -15,14 +15,13 @@ public static class SvcRegistry
         this IServiceCollection svc,
              IConfiguration cfg)
     {
-        svc.AddScoped<ClientRequest>();
-
         //AppCfg Registry
         svc.AddAppCfg(cfg);
 
         //App Logic Registry
         svc.AddScoped<IAppAuthentication, AppAuthentication1>();
         svc.AddScoped<IAppDbOperator, AppDbOperator>();
+        svc.AddScoped<IAppEmailer, Emailer1>();
         
         //Tool Registry
         svc.AddScoped<IToolAuthEmailProvider, FirebaseAuth1>();

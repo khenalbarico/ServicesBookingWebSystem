@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="BlazorApp1/BlazorApp1.csproj" />
   <Project Path="LogicLib1/LogicLib1.csproj" />
+  <Project Path="TestProject1/TestProject1.csproj" Id="f5fa9583-c5bb-485c-8259-2d7cf16d1918" />
   <Project Path="ToolsLib1/ToolsLib1.csproj" />
 </Solution>
