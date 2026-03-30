@@ -2,6 +2,7 @@
 using LogicLib1.AppDb1;
 using LogicLib1.AppEmailer1;
 using LogicLib1.AppInit1;
+using LogicLib1.AppPayment1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ToolsLib1.FirebaseClient1;
@@ -27,6 +28,7 @@ internal static class TestOutputHelperExt1
                 svc.AddScoped<IAppAuthentication, AppAuthentication1>();
                 svc.AddScoped<IAppDbOperator, AppDbOperator>();
                 svc.AddScoped<IAppEmailer, Emailer1>();
+                svc.AddScoped<PaymongoQrph1>();
 
                 // Tool Registry
                 svc.AddScoped<IToolAuthEmailProvider, FirebaseAuth1>();

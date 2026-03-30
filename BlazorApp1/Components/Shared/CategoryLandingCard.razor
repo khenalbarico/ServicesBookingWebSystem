@@ -1,0 +1,24 @@
+﻿<div class="category-card h-100">
+    <div class="category-card-body">
+        <div class="category-icon mb-3">
+            <span class="bi bi-stars"></span>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="category-badge">@Card.CategoryTitle</span>
+            <span class="service-count">@Card.ServiceCount services</span>
+        </div>
+
+        <h3 class="category-title">@Card.CategoryTitle</h3>
+        <p class="category-description">@Card.Description</p>
+
+        <a class="btn btn-brand w-100 rounded-pill mt-3"
+           href="@($"/book/{Card.CategoryKey}")">
+            Book @Card.CategoryTitle
+        </a>
+    </div>
+</div>
+
+@code {
+    [Parameter] public CategoryLandingCardVm Card { get; set; } = default!;
+}

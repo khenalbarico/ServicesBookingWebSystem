@@ -1,75 +1,119 @@
 ﻿@page "/"
-@using BlazorApp1.Mappers
-@using BlazorApp1.ViewModels
-@using LogicLib1.AppDb1
-@using LogicLib1.AppModels1.Server
 @inject IAppDbOperator AppDbOperator
 
-<PageTitle>Beauty Services</PageTitle>
+<PageTitle>Beauty Booking</PageTitle>
 
-<HeroSection />
-
-<section id="services" class="services-section py-5">
+<section class="hero-section py-5">
     <div class="container py-4">
-        <SectionHeading Badge="Our Services"
-                        Title="Choose a service and book instantly"
-                        Description="Browse available beauty services loaded from Firebase. Select the service you want and continue to booking." />
+        <div class="hero-card">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-7">
+                    <span class="hero-badge">Fast booking • No account needed • Smooth experience</span>
 
-        @if (IsLoading)
-        {
-            <div class="text-center py-5">
-                <div class="spinner-border text-secondary" role="status"></div>
-                <p class="text-muted mt-3 mb-0">Loading services...</p>
-            </div>
-        }
-        else if (!string.IsNullOrWhiteSpace(ErrorMessage))
-        {
-            <div class="alert alert-danger border-0 rounded-4 shadow-sm">
-                <h5 class="fw-bold mb-2">Unable to load services</h5>
-                <p class="mb-0">@ErrorMessage</p>
-            </div>
-        }
-        else
-        {
-            @if (NailCards.Count > 0)
-            {
-                <ServiceCategorySection CategoryName="Nail Services"
-                                        Description="Manicure, nail extensions, polish, and nail beauty treatments."
-                                        Services="NailCards" />
-            }
+                    <h1 class="hero-title mt-3">
+                        Choose a beauty category
+                        <span>and book in minutes</span>
+                    </h1>
 
-            @if (LashCards.Count > 0)
+                    <p class="hero-description">
+                        Start by selecting a category. Then choose one or more services, pick an available date and time, and confirm your appointment.
+                    </p>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="hero-preview-card">
+                        <div class="preview-label">Simple booking flow</div>
+
+                        <div class="mt-3">
+                            <div class="booking-step">1. Choose category</div>
+                            <div class="booking-step">2. Select services</div>
+                            <div class="booking-step">3. Pick date &amp; time</div>
+                            <div class="booking-step">4. Confirm appointment</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <SectionHeading Badge="Service Categories"
+                            Title="What would you like to book today?"
+                            Description="Choose a category to continue to the booking page." />
+
+            @if (IsLoading)
             {
-                <ServiceCategorySection CategoryName="Lash Services"
-                                        Description="Lash enhancement and eyelash extension services."
-                                        Services="LashCards" />
+                <div class="text-center py-5">
+                    <div class="spinner-border text-secondary" role="status"></div>
+                    <p class="text-muted mt-3 mb-0">Loading categories...</p>
+                </div>
             }
-        }
+            else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="alert alert-danger border-0 rounded-4 shadow-sm">
+                    <h5 class="fw-bold mb-2">Unable to load services</h5>
+                    <p class="mb-0">@ErrorMessage</p>
+                </div>
+            }
+            else if (CategoryCards.Count == 0)
+            {
+                <div class="alert alert-warning border-0 rounded-4 shadow-sm">
+                    <h5 class="fw-bold mb-2">No categories available</h5>
+                    <p class="mb-0">There are currently no services available for booking.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row g-4">
+                    @foreach (var item in CategoryCards)
+                    {
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <CategoryLandingCard Card="item" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
     </div>
 </section>
 
 @code {
-    private bool IsLoading = true;
-    private string? ErrorMessage;
-
-    private ServiceCollectionResponse Response = new();
-    private List<LandingServiceCardVm> AllCards = [];
-
-    private IReadOnlyList<LandingServiceCardVm> NailCards =>
-        AllCards.Where(x => x.Category == "Nails").ToList();
-
-    private IReadOnlyList<LandingServiceCardVm> LashCards =>
-        AllCards.Where(x => x.Category == "Lashes").ToList();
+    private bool                        IsLoading = true;
+    private string?                     ErrorMessage;
+    private ServiceCollectionResponse   Response = new();
+    private List<CategoryLandingCardVm> CategoryCards = [];
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            IsLoading = true;
+            IsLoading    = true;
             ErrorMessage = null;
 
             Response = await AppDbOperator.GetServicesAsync();
-            AllCards = ServiceLandingMapper.ToLandingCards(Response);
+
+            CategoryCards = [];
+
+            if (Response.Nails?.Count > 0)
+            {
+                CategoryCards.Add(new CategoryLandingCardVm
+                {
+                    CategoryKey     = "nails",
+                    CategoryTitle   = "Nails",
+                    Description     = "Manicure, nail extensions, polish, and nail care services.",
+                    ServiceCount    = Response.Nails.Count,
+                });
+            }
+
+            if (Response.Lashes?.Count > 0)
+            {
+                CategoryCards.Add(new CategoryLandingCardVm
+                {
+                    CategoryKey     = "lashes",
+                    CategoryTitle   = "Lashes",
+                    Description     = "Lash enhancement and eyelash extension services.",
+                    ServiceCount    = Response.Lashes.Count,
+                });
+            }
         }
         catch (Exception ex)
         {

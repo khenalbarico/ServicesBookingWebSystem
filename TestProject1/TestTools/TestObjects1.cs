@@ -9,7 +9,7 @@ internal class TestFirebaseAppSettings()
 
 internal class TestPaymongoAppSettings()
 {
-    public static string SecretKey => "sk_live_9RwasWQPDqFciMiCiyL1N1Ut";
+    public static string SecretKey => "sk_test_hSvJBTZ9HKAfauimTpnDSpwW";
     public static string BaseUrl => "https://api.paymongo.com/v1";
     public static string WebhookSecretKey => "whsk_Wvd5KEDbCytAjcZtngaugyQ7";
 }
