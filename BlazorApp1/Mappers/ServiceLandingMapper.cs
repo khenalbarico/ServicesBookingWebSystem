@@ -17,9 +17,9 @@ public static class ServiceLandingMapper
     }
 
     private static LandingServiceCardVm ToCard(
-        BaseSvcStructure svc,
-        string category,
-        string imageUrl)
+            BaseSvcStructure svc,
+            string           category,
+            string           imageUrl)
     {
         var hasAvailableSchedule = svc.ScheduleSlots?.IsAvailable ?? false;
 
@@ -27,18 +27,18 @@ public static class ServiceLandingMapper
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList()
-            ?? new List<string>();
+            ?? [];
 
         return new LandingServiceCardVm
         {
-            Category = category,
-            Uid = svc.Uid,
-            Title = svc.Details,
-            Description = svc.Details,
-            Cost = svc.Cost,
-            ImageUrl = imageUrl,
+            Category             = category,
+            Uid                  = svc.Uid,
+            Title                = svc.Details,
+            Description          = svc.Details,
+            Cost                 = svc.Cost,
+            ImageUrl             = imageUrl,
             HasAvailableSchedule = hasAvailableSchedule,
-            AvailableDays = hasAvailableSchedule ? days : new List<string>()
+            AvailableDays        = hasAvailableSchedule ? days : []
         };
     }
 }

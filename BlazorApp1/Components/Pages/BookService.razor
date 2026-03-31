@@ -1,6 +1,5 @@
 ﻿@page "/book/{Category}"
-@inject IAppDbOperator AppDbOperator
-@inject IAppEmailer    AppEmailer
+@using BlazorApp1.Helpers
 
 <PageTitle>Book Service</PageTitle>
 
@@ -11,7 +10,7 @@
         <p class="text-muted mt-3">Loading service details...</p>
     </div>
 }
-else if (SelectedService is null)
+else if (CurrentCategoryServices.Count == 0)
 {
     <div class="container py-5">
         <div class="alert alert-warning rounded-4 border-0 shadow-sm">
@@ -31,7 +30,7 @@ else
                     </a>
 
                     <span class="section-badge text-uppercase">@Category</span>
-                    <h1 class="fw-bold mt-3 booking-page-title">Book @GetCategoryDisplayName() Appointment</h1>
+                    <h1 class="fw-bold mt-3 booking-page-title">Book @CategoryDisplayName Appointment</h1>
                     <p class="text-muted booking-page-subtitle">
                         Choose one or more services below, select an available schedule, and continue to your client details.
                     </p>
@@ -52,13 +51,13 @@ else
                         <div class="row g-4">
                             @foreach (var service in CurrentCategoryServices)
                             {
-                                var availableDates = GetAvailableDates(service);
+                                var availableDates = BookingDateHelper.GetAvailableDates(service);
                                 var selectedDate = GetSelectedDate(service.Uid);
                                 var selectedTime = GetSelectedTime(service.Uid);
                                 var isAlreadyAdded = AppointmentItems.Any(x => x.ServiceUid == service.Uid);
 
                                 <div class="col-12">
-                                    <div class="card border-0 shadow-sm rounded-4 @(service.Uid == SelectedService.Uid ? "border border-2 border-dark" : "")">
+                                    <div class="card border-0 shadow-sm rounded-4">
                                         <div class="card-body p-4">
                                             <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
                                                 <div>
@@ -120,7 +119,7 @@ else
                                                                 value="@selectedTime"
                                                                 @onchange="(e) => OnTimeChanged(service.Uid, e.Value?.ToString())">
                                                             <option value="">Select a time</option>
-                                                            @foreach (var slot in service.ScheduleSlots.TimeSlots)
+                                                            @foreach (var slot in service.ScheduleSlots!.TimeSlots)
                                                             {
                                                                 <option value="@slot">@slot</option>
                                                             }
@@ -292,368 +291,4 @@ else
             </div>
         </div>
     </div>
-}
-
-@code {
-    [Parameter] public string Category { get; set; } = "";
-
-    private bool   IsLoading      = true;
-    private bool   IsSubmitting;
-    private bool   ShowClientForm;
-    private string ErrorMessage   = "";
-    private string SuccessMessage = "";
-
-    private BaseSvcStructure?      SelectedService;
-    private List<BaseSvcStructure> CurrentCategoryServices = [];
-
-    private ClientInformation ClientInfo = new();
-
-    private readonly Dictionary<string, DateTime?> SelectedDatesByService = new();
-    private readonly Dictionary<string, string> SelectedTimesByService = new();
-
-    private readonly List<AppointmentItem> AppointmentItems = [];
-
-    protected override async Task OnParametersSetAsync()
-    {
-        try
-        {
-            IsLoading = true;
-            ErrorMessage = "";
-            SuccessMessage = "";
-            SelectedService = null;
-            CurrentCategoryServices = [];
-
-            var response = await AppDbOperator.GetServicesAsync();
-
-            CurrentCategoryServices = Category.ToLowerInvariant() switch
-            {
-                "nails" => response.Nails.Cast<BaseSvcStructure>().ToList(),
-                "lashes" => response.Lashes.Cast<BaseSvcStructure>().ToList(),
-                _ => []
-            };
-
-            SelectedService = CurrentCategoryServices.FirstOrDefault();
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    private string GetCategoryDisplayName()
-    {
-        return Category.ToLowerInvariant() switch
-        {
-            "nails"  => "Nails",
-            "lashes" => "Lashes",
-            "brows"  => "Brows",
-            "spas"   => "Spa",
-            _        => "Service"
-        };
-    }
-
-    private List<DateTime> GetAvailableDates(BaseSvcStructure service, int daysAhead = 60)
-    {
-        var result = new List<DateTime>();
-
-        if (service.ScheduleSlots?.IsAvailable != true)
-            return result;
-
-        if (service.ScheduleSlots.DaySlots is null || service.ScheduleSlots.DaySlots.Count == 0)
-            return result;
-
-        var allowedDays = service.ScheduleSlots.DaySlots
-            .Select(NormalizeDayName)
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var start = GetPhilippineNow().Date;
-
-        for (int i = 0; i < daysAhead; i++)
-        {
-            var date = start.AddDays(i);
-            var dayName = date.DayOfWeek.ToString();
-
-            if (allowedDays.Contains(dayName))
-            {
-                result.Add(date);
-            }
-        }
-
-        return result;
-    }
-
-    private static string NormalizeDayName(string? rawDay)
-    {
-        if (string.IsNullOrWhiteSpace(rawDay))
-            return "";
-
-        rawDay = rawDay.Trim();
-
-        if (Enum.TryParse<DayOfWeek>(rawDay, true, out var dayOfWeek))
-            return dayOfWeek.ToString();
-
-        return rawDay.ToLowerInvariant() switch
-        {
-            "mon" => DayOfWeek.Monday.ToString(),
-            "tue" => DayOfWeek.Tuesday.ToString(),
-            "tues" => DayOfWeek.Tuesday.ToString(),
-            "wed" => DayOfWeek.Wednesday.ToString(),
-            "thu" => DayOfWeek.Thursday.ToString(),
-            "thur" => DayOfWeek.Thursday.ToString(),
-            "thurs" => DayOfWeek.Thursday.ToString(),
-            "fri" => DayOfWeek.Friday.ToString(),
-            "sat" => DayOfWeek.Saturday.ToString(),
-            "sun" => DayOfWeek.Sunday.ToString(),
-            _ => rawDay
-        };
-    }
-
-    private DateTime? GetSelectedDate(string serviceUid)
-    {
-        return SelectedDatesByService.TryGetValue(serviceUid, out var value) ? value : null;
-    }
-
-    private string GetSelectedDateString(string serviceUid)
-    {
-        var date = GetSelectedDate(serviceUid);
-        return date?.ToString("yyyy-MM-dd") ?? "";
-    }
-
-    private string GetSelectedTime(string serviceUid)
-    {
-        return SelectedTimesByService.TryGetValue(serviceUid, out var value) ? value : "";
-    }
-
-    private void OnDateChanged(string serviceUid, string? value)
-    {
-        if (DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
-        {
-            SelectedDatesByService[serviceUid] = parsed.Date;
-        }
-        else
-        {
-            SelectedDatesByService[serviceUid] = null;
-        }
-    }
-
-    private void OnTimeChanged(string serviceUid, string? value)
-    {
-        SelectedTimesByService[serviceUid] = value ?? "";
-    }
-
-    private void AddToAppointment(BaseSvcStructure service)
-    {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
-        if (AppointmentItems.Any(x => x.ServiceUid == service.Uid))
-        {
-            ErrorMessage = "This service is already in the appointment list.";
-            return;
-        }
-
-        var selectedDate = GetSelectedDate(service.Uid);
-        var selectedTime = GetSelectedTime(service.Uid);
-
-        if (!selectedDate.HasValue)
-        {
-            ErrorMessage = $"Please select a date for {service.Details}.";
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(selectedTime))
-        {
-            ErrorMessage = $"Please select a time slot for {service.Details}.";
-            return;
-        }
-
-        AppointmentItems.Add(new AppointmentItem
-        {
-            ServiceUid = service.Uid,
-            ServiceName = service.Details,
-            ServiceDetails = service.Details,
-            ServiceCost = Convert.ToInt32(service.Cost),
-            SelectedDate = selectedDate.Value,
-            SelectedTimeSlot = selectedTime
-        });
-    }
-
-    private void RemoveFromAppointment(string serviceUid)
-    {
-        var item = AppointmentItems.FirstOrDefault(x => x.ServiceUid == serviceUid);
-        if (item is not null)
-        {
-            AppointmentItems.Remove(item);
-        }
-    }
-
-    private void OpenClientForm()
-    {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
-        if (AppointmentItems.Count == 0)
-        {
-            ErrorMessage = "Please add at least one service first.";
-            return;
-        }
-
-        ShowClientForm = true;
-    }
-
-    private void CloseClientForm()
-    {
-        ShowClientForm = false;
-    }
-
-    private async Task SubmitAppointmentAsync()
-    {
-        ErrorMessage = "";
-        SuccessMessage = "";
-
-        if (AppointmentItems.Count == 0)
-        {
-            ErrorMessage = "There are no services in the appointment.";
-            return;
-        }
-
-        try
-        {
-            IsSubmitting = true;
-
-            ApplyConsumerFallbacks();
-
-            var request = new ClientRequest
-            {
-                ClientInformation = new ClientInformation
-                {
-                    ClientBookingId = "",
-                    Email = ClientInfo.Email.Trim(),
-                    ContactNumber = ClientInfo.ContactNumber.Trim(),
-                    FirstName = ClientInfo.FirstName.Trim(),
-                    LastName = ClientInfo.LastName.Trim(),
-                    ConsumerFirstName = ClientInfo.ConsumerFirstName.Trim(),
-                    ConsumerLastName = ClientInfo.ConsumerLastName.Trim(),
-                    ConsumerContactNumber = ClientInfo.ConsumerContactNumber.Trim(),
-                    BookingDate = GetPhilippineNow()
-                },
-                ClientServices = AppointmentItems.Select(x => new ClientService
-                {
-                    ServiceUid = x.ServiceUid,
-                    ServiceName = x.ServiceName,
-                    ServiceDetails = x.ServiceDetails,
-                    ServiceCost = x.ServiceCost,
-                    ServiceDate = CombineDateAndTime(x.SelectedDate, x.SelectedTimeSlot)
-                }).ToList()
-            };
-
-            await AppEmailer.SendEmailAsync(request);
-
-            SuccessMessage = "Your appointment request has been submitted successfully.";
-            ShowClientForm = false;
-
-            AppointmentItems.Clear();
-            SelectedDatesByService.Clear();
-            SelectedTimesByService.Clear();
-            ClientInfo = new ClientInformation();
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Failed to submit appointment: {ex.Message}";
-        }
-        finally
-        {
-            IsSubmitting = false;
-        }
-    }
-
-    private void ApplyConsumerFallbacks()
-    {
-        bool hasAnyConsumerValue =
-            !string.IsNullOrWhiteSpace(ClientInfo.ConsumerFirstName) ||
-            !string.IsNullOrWhiteSpace(ClientInfo.ConsumerLastName) ||
-            !string.IsNullOrWhiteSpace(ClientInfo.ConsumerContactNumber);
-
-        if (!hasAnyConsumerValue)
-        {
-            ClientInfo.ConsumerFirstName = ClientInfo.FirstName;
-            ClientInfo.ConsumerLastName = ClientInfo.LastName;
-            ClientInfo.ConsumerContactNumber = ClientInfo.ContactNumber;
-        }
-    }
-
-    private static DateTime CombineDateAndTime(DateTime selectedDate, string timeSlot)
-    {
-        var startTime = ParseStartTime(timeSlot);
-        return selectedDate.Date.Add(startTime);
-    }
-
-    private static TimeSpan ParseStartTime(string timeSlot)
-    {
-        if (string.IsNullOrWhiteSpace(timeSlot))
-            return TimeSpan.Zero;
-
-        var normalized = timeSlot.Trim().ToUpperInvariant();
-
-        var rangeMatch = Regex.Match(normalized, @"^\s*(?<start>\d{1,2}(:\d{2})?)\s*-\s*(?<end>\d{1,2}(:\d{2})?)\s*(?<ampm>AM|PM)\s*$");
-        if (rangeMatch.Success)
-        {
-            var start = rangeMatch.Groups["start"].Value;
-            var ampm = rangeMatch.Groups["ampm"].Value;
-
-            if (DateTime.TryParseExact(
-                $"{start} {ampm}",
-                new[] { "h tt", "hh tt", "h:mm tt", "hh:mm tt" },
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var dt))
-            {
-                return dt.TimeOfDay;
-            }
-        }
-
-        var directMatch = Regex.Match(normalized, @"(?<start>\d{1,2}(:\d{2})?\s*(AM|PM))");
-        if (directMatch.Success &&
-            DateTime.TryParseExact(
-                directMatch.Groups["start"].Value.Replace("  ", " "),
-                new[] { "h tt", "hh tt", "h:mm tt", "hh:mm tt" },
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var parsed))
-        {
-            return parsed.TimeOfDay;
-        }
-
-        return TimeSpan.Zero;
-    }
-
-    private static DateTime GetPhilippineNow()
-    {
-        try
-        {
-            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Asia/Manila");
-        }
-        catch
-        {
-            try
-            {
-                return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Singapore Standard Time");
-            }
-            catch
-            {
-                return DateTime.UtcNow.AddHours(8);
-            }
-        }
-    }
-
-    private sealed class AppointmentItem
-    {
-        public string ServiceUid { get; set; } = "";
-        public string ServiceName { get; set; } = "";
-        public string ServiceDetails { get; set; } = "";
-        public int ServiceCost { get; set; }
-        public DateTime SelectedDate { get; set; }
-        public string SelectedTimeSlot { get; set; } = "";
-    }
 }
