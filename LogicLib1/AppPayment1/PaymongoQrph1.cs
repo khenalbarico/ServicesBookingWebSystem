@@ -1,47 +1,19 @@
 ﻿using LogicLib1.AppModels1.Client;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ToolsLib1.Paymongo1;
 
 namespace LogicLib1.AppPayment1;
 
-public sealed class PaymongoQrph1
+public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
 {
-    private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions _jsonOptions;
-
-    public PaymongoQrph1(string secretKey, HttpClient? httpClient = null)
-    {
-        if (string.IsNullOrWhiteSpace(secretKey))
-            throw new ArgumentException("PayMongo secret key is required.", nameof(secretKey));
-
-        _httpClient = httpClient ?? new HttpClient();
-        _httpClient.BaseAddress = new Uri("https://api.paymongo.com/v1/");
-
-        var basicToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{secretKey}:"));
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Basic", basicToken);
-        _httpClient.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
-
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = null,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-    }
-
+    readonly HttpClient HttpClient = _cfg.CreatePaymongoClient();
     public async Task<PaymongoQrphChargeResult> CreateQrphChargeAsync(
-        ClientRequest payload,
-        CancellationToken cancellationToken = default)
+                 ClientRequest     payload,
+                 CancellationToken ct = default)
     {
-        if (payload is null) throw new ArgumentNullException(nameof(payload));
-        if (payload.ClientInformation is null) throw new ArgumentException("ClientInformation is required.");
-        if (payload.ClientServices is null || payload.ClientServices.Count == 0)
-            throw new ArgumentException("At least one client service is required.");
-
-        long totalAmountPhp = payload.ClientServices.Sum(x => x.ServiceCost);
+        long totalAmountPhp      = payload.ClientServices.Sum(x => x.ServiceCost);
         long totalAmountCentavos = totalAmountPhp * 100;
 
         string description = BuildDescription(payload);
@@ -76,7 +48,7 @@ public sealed class PaymongoQrph1
         var paymentIntentResponse = await PostAsync<PaymongoEnvelope<PaymentIntentData>>(
             "payment_intents",
             paymentIntentRequest,
-            cancellationToken);
+            ct);
 
         var paymentIntentId = paymentIntentResponse.Data.Id;
 
@@ -102,11 +74,6 @@ public sealed class PaymongoQrph1
                             country = "PH"
                         }
                     },
-                    // Optional: uncomment if you want a custom expiry instead of default 30 mins
-                    // details = new
-                    // {
-                    //     expiry_seconds = 1800
-                    // }
                 }
             }
         };
@@ -114,7 +81,7 @@ public sealed class PaymongoQrph1
         var paymentMethodResponse = await PostAsync<PaymongoEnvelope<PaymentMethodData>>(
             "payment_methods",
             paymentMethodRequest,
-            cancellationToken);
+            ct);
 
         var paymentMethodId = paymentMethodResponse.Data.Id;
 
@@ -133,7 +100,7 @@ public sealed class PaymongoQrph1
         var attachResponse = await PostAsync<PaymongoEnvelope<PaymentIntentData>>(
             $"payment_intents/{paymentIntentId}/attach",
             attachRequest,
-            cancellationToken);
+            ct);
 
         var nextAction = attachResponse.Data.Attributes.NextAction;
         var qrCode = nextAction?.Code;
@@ -149,7 +116,7 @@ public sealed class PaymongoQrph1
             QrCodeId = qrCode?.Id,
             QrLabel = qrCode?.Label,
             NextActionType = nextAction?.Type,
-            RawResponse = JsonSerializer.Serialize(attachResponse, _jsonOptions)
+            RawResponse = JsonSerializer.Serialize(attachResponse)
         };
     }
 
@@ -160,13 +127,13 @@ public sealed class PaymongoQrph1
         if (string.IsNullOrWhiteSpace(paymentIntentId))
             throw new ArgumentException("paymentIntentId is required.", nameof(paymentIntentId));
 
-        using var response = await _httpClient.GetAsync($"payment_intents/{paymentIntentId}", cancellationToken);
+        using var response = await HttpClient.GetAsync($"payment_intents/{paymentIntentId}", cancellationToken);
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw CreatePaymongoException(body, response.StatusCode);
 
-        var result = JsonSerializer.Deserialize<PaymongoEnvelope<PaymentIntentData>>(body, _jsonOptions)
+        var result = JsonSerializer.Deserialize<PaymongoEnvelope<PaymentIntentData>>(body)
                      ?? throw new InvalidOperationException("Unable to deserialize PayMongo response.");
 
         return result;
@@ -174,15 +141,15 @@ public sealed class PaymongoQrph1
 
     private async Task<T> PostAsync<T>(string endpoint, object payload, CancellationToken cancellationToken)
     {
-        string json = JsonSerializer.Serialize(payload, _jsonOptions);
+        string json = JsonSerializer.Serialize(payload);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
+        using var response = await HttpClient.PostAsync(endpoint, content, cancellationToken);
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             throw CreatePaymongoException(body, response.StatusCode);
 
-        var result = JsonSerializer.Deserialize<T>(body, _jsonOptions);
+        var result = JsonSerializer.Deserialize<T>(body);
         if (result is null)
             throw new InvalidOperationException("Unable to deserialize PayMongo response.");
 
