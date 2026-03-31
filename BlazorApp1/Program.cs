@@ -11,7 +11,11 @@ builder.Services.AddRazorComponents()
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<BookingPageService>();
+builder.Services.AddSingleton<IBookingPaymentStore, InMemoryBookingPaymentStore>();
+builder.Services.AddSingleton<BookingNotificationService>();
 
+builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddSvcRegistry(builder.Configuration);
 
 var app = builder.Build();

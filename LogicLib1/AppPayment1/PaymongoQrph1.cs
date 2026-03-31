@@ -6,14 +6,15 @@ using ToolsLib1.Paymongo1;
 
 namespace LogicLib1.AppPayment1;
 
-public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
+public sealed class PaymongoQrph1(IPaymongoCfg cfg)
 {
-    readonly HttpClient HttpClient = _cfg.CreatePaymongoClient();
+    readonly HttpClient HttpClient = cfg.CreatePaymongoClient();
+
     public async Task<PaymongoQrphChargeResult> CreateQrphChargeAsync(
-                 ClientRequest     payload,
-                 CancellationToken ct = default)
+        ClientRequest payload,
+        CancellationToken ct = default)
     {
-        long totalAmountPhp      = payload.ClientServices.Sum(x => x.ServiceCost);
+        long totalAmountPhp = payload.ClientServices.Sum(x => x.ServiceCost);
         long totalAmountCentavos = totalAmountPhp * 100;
 
         string description = BuildDescription(payload);
@@ -40,7 +41,7 @@ public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
                     payment_method_allowed = new[] { "qrph" },
                     description,
                     statement_descriptor = "BOOKING",
-                    metadata = metadata
+                    metadata
                 }
             }
         };
@@ -61,7 +62,7 @@ public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
                     type = "qrph",
                     billing = new
                     {
-                        name = $"{payload.ClientInformation.FirstName} {payload.ClientInformation.LastName}",
+                        name = $"{payload.ClientInformation.FirstName} {payload.ClientInformation.LastName}".Trim(),
                         email = payload.ClientInformation.Email,
                         phone = payload.ClientInformation.ContactNumber,
                         address = new
@@ -73,7 +74,7 @@ public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
                             postal_code = "0000",
                             country = "PH"
                         }
-                    },
+                    }
                 }
             }
         };
@@ -112,7 +113,7 @@ public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
             PaymentMethodId = paymentMethodId,
             AmountCentavos = attachResponse.Data.Attributes.Amount,
             AmountPhp = attachResponse.Data.Attributes.Amount / 100m,
-            QrImageDataUrl = qrCode?.ImageUrl,
+            QrImageUrl = qrCode?.ImageUrl,
             QrCodeId = qrCode?.Id,
             QrLabel = qrCode?.Label,
             NextActionType = nextAction?.Type,
@@ -171,7 +172,6 @@ public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
         }
         catch
         {
-            // Ignore parsing failure and fall through
         }
 
         return new InvalidOperationException($"PayMongo error ({(int)statusCode}): {responseBody}");
@@ -179,14 +179,10 @@ public sealed class PaymongoQrph1 (IPaymongoCfg _cfg)
 
     private static string BuildDescription(ClientRequest payload)
     {
-        var services = string.Join(", ",
-            payload.ClientServices.Select(x => $"{x.ServiceName} ({x.ServiceDetails})"));
-
+        var services = string.Join(", ", payload.ClientServices.Select(x => $"{x.ServiceName} ({x.ServiceDetails})"));
         return $"Booking {payload.ClientInformation.ClientBookingId}: {services}";
     }
 }
-
-#region Result Models
 
 public sealed class PaymongoQrphChargeResult
 {
@@ -196,7 +192,7 @@ public sealed class PaymongoQrphChargeResult
     public long AmountCentavos { get; set; }
     public decimal AmountPhp { get; set; }
     public string? QrCodeId { get; set; }
-    public string? QrImageDataUrl { get; set; }
+    public string? QrImageUrl { get; set; }
     public string? QrLabel { get; set; }
     public string? NextActionType { get; set; }
     public string? RawResponse { get; set; }
@@ -276,5 +272,3 @@ public sealed class PaymongoErrorItem
     [JsonPropertyName("detail")]
     public string? Detail { get; set; }
 }
-
-#endregion

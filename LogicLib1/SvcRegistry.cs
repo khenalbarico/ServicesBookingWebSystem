@@ -1,6 +1,7 @@
 ﻿using LogicLib1.AppAuth1;
 using LogicLib1.AppDb1;
 using LogicLib1.AppEmailer1;
+using LogicLib1.AppPayment1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ToolsLib1.FirebaseClient1;
@@ -22,6 +23,7 @@ public static class SvcRegistry
         svc.AddScoped<IAppAuthentication, AppAuthentication1>();
         svc.AddScoped<IAppDbOperator, AppDbOperator>();
         svc.AddScoped<IAppEmailer, Emailer1>();
+        svc.AddScoped<PaymongoQrph1>();
         
         //Tool Registry
         svc.AddScoped<IToolAuthEmailProvider, FirebaseAuth1>();

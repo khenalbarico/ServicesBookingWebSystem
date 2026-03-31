@@ -220,7 +220,7 @@ else
                 </div>
 
                 <div class="modal-body pt-3">
-                    <EditForm Model="@ClientInfo" OnValidSubmit="SubmitAppointmentAsync">
+                    <EditForm Model="@ClientInfo" OnValidSubmit="StartPaymentAsync">
                         <DataAnnotationsValidator />
                         <ValidationSummary />
 
@@ -283,10 +283,84 @@ else
                                 Cancel
                             </button>
                             <button type="submit" class="btn btn-dark rounded-pill px-4" disabled="@IsSubmitting">
-                                @(IsSubmitting ? "Submitting..." : "Confirm appointment")
+                                @(IsSubmitting ? "Preparing payment..." : "Proceed to payment")
                             </button>
                         </div>
                     </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowPaymentModal && PaymentResult is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.55);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h4 class="modal-title fw-bold">QRPH Payment</h4>
+                    <button type="button" class="btn-close" @onclick="ClosePaymentModal"></button>
+                </div>
+
+                <div class="modal-body text-center pt-3">
+                    <p class="text-muted mb-3">
+                        Scan the QR code to complete your payment.
+                    </p>
+
+                    <div class="fw-bold fs-4 mb-1">₱@PaymentResult.AmountPhp</div>
+                    <div class="small text-muted mb-3">Booking ID: @CurrentBookingId</div>
+
+                    @if (!string.IsNullOrWhiteSpace(PaymentResult.QrImageUrl))
+                    {
+                        <img src="@PaymentResult.QrImageUrl"
+                             alt="QRPH Payment"
+                             class="img-fluid rounded-4 border shadow-sm mb-4"
+                             style="max-width: 320px;" />
+                    }
+
+                    <div class="d-flex justify-content-center align-items-center gap-2 text-muted">
+                        <div class="spinner-border spinner-border-sm"></div>
+                        <span>Waiting for payment confirmation...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ShowSuccessModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.55);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h4 class="modal-title fw-bold">Payment Successful</h4>
+                    <button type="button" class="btn-close" @onclick="CloseSuccessModal"></button>
+                </div>
+
+                <div class="modal-body text-center pt-3">
+                    <div class="mb-3">
+                        <div class="display-6 fw-bold">Thank you</div>
+                        <p class="text-muted mb-0">
+                            Your payment was received successfully and your appointment request has been submitted.
+                        </p>
+                    </div>
+
+                    @if (PendingRequest is not null)
+                    {
+                        <div class="p-3 rounded-4 bg-light border text-start mb-4">
+                            <div><strong>Booking ID:</strong> @PendingRequest.ClientInformation.ClientBookingId</div>
+                            <div><strong>Name:</strong> @PendingRequest.ClientInformation.FirstName @PendingRequest.ClientInformation.LastName</div>
+                            <div><strong>Email:</strong> @PendingRequest.ClientInformation.Email</div>
+                        </div>
+                    }
+
+                    <button type="button"
+                            class="btn btn-success rounded-pill px-4"
+                            @onclick="FinishSuccessfulBooking">
+                        Done
+                    </button>
                 </div>
             </div>
         </div>

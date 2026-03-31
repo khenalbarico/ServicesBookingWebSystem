@@ -1,40 +1,52 @@
 ﻿using BlazorApp1.Helpers;
 using BlazorApp1.Services;
-using LogicLib1.AppEmailer1;
 using LogicLib1.AppModels1.Client;
+using LogicLib1.AppModels1.Server.Booking;
 using LogicLib1.AppModels1.Server.Services;
+using LogicLib1.AppPayment1;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
 
 namespace BlazorApp1.Components.Pages;
 
-public partial class BookService
+public partial class BookService : IDisposable
 {
-    [Inject]    protected     BookingPageService BookingService { get; set; } = default!;
-    [Inject]    protected     IAppEmailer        AppEmailer     { get; set; } = default!;
+    [Inject] protected BookingPageService BookingService { get; set; } = default!;
+    [Inject] protected PaymongoQrph1 PaymongoQrph { get; set; } = default!;
+    [Inject] protected IBookingPaymentStore BookingPaymentStore { get; set; } = default!;
+    [Inject] protected BookingNotificationService BookingNotificationService { get; set; } = default!;
 
-    [Parameter] public string                    Category       { get; set; } = "";
+    [Parameter] public string Category { get; set; } = "";
 
-    protected bool   IsLoading      = true;
-    protected bool   IsSubmitting;
-    protected bool   ShowClientForm;
-    protected string ErrorMessage   = "";
+    protected bool IsLoading = true;
+    protected bool IsSubmitting;
+    protected bool ShowClientForm;
+    protected bool ShowPaymentModal;
+    protected bool ShowSuccessModal;
+
+    protected string ErrorMessage = "";
     protected string SuccessMessage = "";
 
     protected List<BaseSvcStructure> CurrentCategoryServices = [];
-    protected ClientInformation      ClientInfo              = new();
+    protected ClientInformation ClientInfo = new();
 
     protected readonly Dictionary<string, DateTime?> SelectedDatesByService = [];
-    protected readonly Dictionary<string, string>    SelectedTimesByService = [];
-    protected readonly List<AppointmentItem>         AppointmentItems       = [];
+    protected readonly Dictionary<string, string> SelectedTimesByService = [];
+    protected readonly List<AppointmentItem> AppointmentItems = [];
+
+    protected PaymongoQrphChargeResult? PaymentResult;
+    protected ClientRequest? PendingRequest;
+    protected string CurrentBookingId = "";
+
+    private IDisposable? _bookingSubscription;
 
     protected string CategoryDisplayName => Category.GetDisplayName();
 
     protected override async Task OnParametersSetAsync()
     {
-        IsLoading               = true;
-        ErrorMessage            = "";
-        SuccessMessage          = "";
+        IsLoading = true;
+        ErrorMessage = "";
+        SuccessMessage = "";
         CurrentCategoryServices = [];
 
         try
@@ -63,21 +75,17 @@ public partial class BookService
     protected void OnDateChanged(string serviceUid, string? value)
     {
         if (DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
-        {
             SelectedDatesByService[serviceUid] = parsed.Date;
-        }
         else
-        {
             SelectedDatesByService[serviceUid] = null;
-        }
     }
 
-    protected void OnTimeChanged(string serviceUid, string? value)
-    => SelectedTimesByService[serviceUid] = value ?? "";
-    
+    protected void OnTimeChanged(string serviceUid, string? value) =>
+        SelectedTimesByService[serviceUid] = value ?? "";
+
     protected void AddToAppointment(BaseSvcStructure service)
     {
-        ErrorMessage   = "";
+        ErrorMessage = "";
         SuccessMessage = "";
 
         if (AppointmentItems.Any(x => x.ServiceUid == service.Uid))
@@ -103,11 +111,11 @@ public partial class BookService
 
         AppointmentItems.Add(new AppointmentItem
         {
-            ServiceUid       = service.Uid,
-            ServiceName      = service.Details,
-            ServiceDetails   = service.Details,
-            ServiceCost      = service.Cost,
-            SelectedDate     = selectedDate.Value,
+            ServiceUid = service.Uid,
+            ServiceName = service.Details,
+            ServiceDetails = service.Details,
+            ServiceCost = service.Cost,
+            SelectedDate = selectedDate.Value,
             SelectedTimeSlot = selectedTime
         });
     }
@@ -138,7 +146,7 @@ public partial class BookService
         ShowClientForm = false;
     }
 
-    protected async Task SubmitAppointmentAsync()
+    protected async Task StartPaymentAsync()
     {
         ErrorMessage = "";
         SuccessMessage = "";
@@ -154,16 +162,36 @@ public partial class BookService
             IsSubmitting = true;
 
             BookingService.ApplyConsumerFallbacks(ClientInfo);
-            var request = BookingService.BuildClientRequest(ClientInfo, AppointmentItems);
 
-            await AppEmailer.SendEmailAsync(request);
+            PendingRequest = BookingService.BuildClientRequest(ClientInfo, AppointmentItems);
+            CurrentBookingId = PendingRequest.ClientInformation.ClientBookingId ?? "";
 
-            SuccessMessage = "Your appointment request has been submitted successfully.";
-            ResetForm();
+            PaymentResult = await PaymongoQrph.CreateQrphChargeAsync(PendingRequest);
+
+            var record = new BookingPaymentRecord
+            {
+                BookingId = CurrentBookingId,
+                Category = Category,
+                PaymentIntentId = PaymentResult.PaymentIntentId ?? "",
+                PaymentStatus = "Pending",
+                EmailSent = false,
+                CreatedAt = DateTime.UtcNow,
+                Request = PendingRequest
+            };
+
+            await BookingPaymentStore.SaveAsync(record);
+
+            _bookingSubscription?.Dispose();
+            _bookingSubscription = BookingNotificationService.Subscribe(CurrentBookingId, OnBookingStatusChangedAsync);
+
+            ShowClientForm = false;
+            ShowPaymentModal = true;
+            ErrorMessage = "";
+            SuccessMessage = "";
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to submit appointment: {ex.Message}";
+            ErrorMessage = $"Failed to start payment: {ex.Message}";
         }
         finally
         {
@@ -171,12 +199,64 @@ public partial class BookService
         }
     }
 
+    private async Task OnBookingStatusChangedAsync(string status)
+    {
+        if (string.Equals(status, "Paid", StringComparison.OrdinalIgnoreCase))
+        {
+            ShowPaymentModal = false;
+            ShowSuccessModal = true;
+            ErrorMessage = "";
+            SuccessMessage = "";
+        }
+        else if (string.Equals(status, "Failed", StringComparison.OrdinalIgnoreCase))
+        {
+            ShowPaymentModal = false;
+            ErrorMessage = "Payment failed. Please try again.";
+        }
+        else if (string.Equals(status, "Expired", StringComparison.OrdinalIgnoreCase))
+        {
+            ShowPaymentModal = false;
+            ErrorMessage = "QR payment expired. Please generate a new QR code.";
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected void ClosePaymentModal()
+    {
+        ShowPaymentModal = false;
+    }
+
+    protected void CloseSuccessModal()
+    {
+        ShowSuccessModal = false;
+    }
+
+    protected void FinishSuccessfulBooking()
+    {
+        ShowSuccessModal = false;
+        SuccessMessage = "Your appointment has been confirmed successfully.";
+        ResetForm();
+    }
+
     protected void ResetForm()
     {
+        _bookingSubscription?.Dispose();
+        _bookingSubscription = null;
+
         ShowClientForm = false;
+        ShowPaymentModal = false;
+        PaymentResult = null;
+        PendingRequest = null;
+        CurrentBookingId = "";
+        ClientInfo = new ClientInformation();
         AppointmentItems.Clear();
         SelectedDatesByService.Clear();
         SelectedTimesByService.Clear();
-        ClientInfo = new ClientInformation();
+    }
+
+    public void Dispose()
+    {
+        _bookingSubscription?.Dispose();
     }
 }
